@@ -1,0 +1,66 @@
+---
+  - hosts: all
+    become: true
+    tasks:
+         - name: Install HAProxy 
+           apt: name=haproxy state=present update_cache=yes
+           become: true
+
+         - name: install kepalived
+           apt: name=keepalived state=present update_cache=yes
+           become: true
+        
+         - name: sysctl
+           template:
+                src: sysctl.conf.j2
+                dest: /etc/sysctl.conf
+                mode: 0744
+         
+         - name: check
+           command: sysctl -p
+
+
+
+  - hosts: master
+    become: true
+    tasks:
+         - name: master keepalived conf
+           template:
+                src: keepalived_master.conf.j2
+                dest: /etc/keepalived/keepalived.conf
+         - name: start keepalived
+           service: name=keepalived state=started
+
+#  - hosts: salve
+#    become: true
+#    tasks:
+#         - name: slave keepalived conf
+#           template:
+#                src: keepalived_slave.conf.j2
+#                dest: /etc/keepalived/keepalived.conf
+#         - name: start keepalived 
+#           service: name=keepalived state=started
+
+
+  - hosts: all
+    become: true
+    tasks:
+         - name: haproxy default
+           template:
+                src: default_conf.j2
+                dest: /etc/default/haproxy
+
+         - name: haproxy conf
+           template:
+                src: haproxy.cfg.j2
+                dest: /etc/haproxy/haproxy.cfg
+
+
+      
+
+
+
+
+       
+    
+         
